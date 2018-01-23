@@ -119,9 +119,6 @@ logger.info("AFTER_NUM_STEPS_APPEND_TEST_DATA = {}".format(AFTER_NUM_STEPS_APPEN
 
 # ##### PREPROCESSING
 
-# In[8]:
-
-
 def get_sample_rate(path):
     sample_rate, samples = wavfile.read(path)
     return sample_rate
@@ -223,16 +220,10 @@ logger.info("X.shape of train data = {}".format(X.shape))
 logger.info("X_predict.shape of predict data = {}".format(X_predict.shape))
 
 
-# In[6]:
-
-
 if DEBAG:
 #decrease number of elements in training (DELETE IT, for debug only)
     X, y, y_binary, df_short = X[::100], y[::100], y_binary[::100], df[::100]
     X_predict = X_predict[:10000]
-
-
-# In[9]:
 
 
 def func(signal):
@@ -259,9 +250,6 @@ else:
     np.save(path_proc_predict, x_test_to_submit)
 
 
-# In[8]:
-
-
 X_train, X_valid, y_train, y_valid = model_selection.train_test_split(
                         proc_train, y_binary, test_size = TEST_SIZE)
 
@@ -271,9 +259,6 @@ logger.info("shapes = X_train {}, y_train {}, X_valid {}, y_valid {}".format(
 
 
 # ### CNN MODEL
-
-# In[9]:
-
 
 def next_batch(batch_size):
     global data_index
@@ -393,9 +378,6 @@ with graph.as_default():
     init = (tf.global_variables_initializer(), tf.local_variables_initializer())
 
 
-# In[10]:
-
-
 # Train and Evaluate the Model
 
 data_index = 0
@@ -491,7 +473,6 @@ def train():
     plot_chart(stats)
 
     
-#plot chartsz
 #format: [i,average_loss, loss_valid, train_accuracy,valid_accuracy, speed]
 def plot_chart(stats):
     plt.figure(figsize=(10,5))
@@ -519,8 +500,6 @@ logger.info ('the training completed!')
 
 
 # ### PREDICT
-
-# In[11]:
 
 
 if DO_CUSTOM_PREDICT:
@@ -563,9 +542,6 @@ predictions_filtered = [x if x in to_keep else 'unknown' for x in predictions]
 user_names = df_predict.user_names.values.tolist()
 
 
-# In[20]:
-
-
 #process_silence
 
 df_predict = df_predict[:len(x_test_to_submit)]
@@ -581,67 +557,9 @@ df_predict.loc[:,'preds'] = df_predict.apply(lambda X:
             'silence' if abs(X.avg_ampl) < 0.01 else X.preds, axis = 1)
 
 
-# In[13]:
-
-
-#%matplotlib inline
-#df_predict.std_ampl.hist(bins = 100)
-#plt.show()
-
-
-# In[ ]:
-
-
 suffix = datetime.datetime.today().isoformat().split(':')[0]
 df_predict.to_csv('prediction_{}.txt'.format(suffix), sep=',',
                   columns = ['user_names', 'preds'], index=False, 
                   header = ['fname','label'])
-
-
-# In[ ]:
-
-
-sys.exit()
-
-
-# In[27]:
-
-
-#analysis
-df_to_analysis = df_predict[df_predict.conf < 0.3]
-df_to_analysis = df_predict[df_predict.preds == 'silence']
-
-for index, row in df_to_analysis.iterrows():
-    addr = row['train_names'] 
-    print (row['preds'], row['conf'], row['avg_ampl'], row['std_ampl'])
-    ipd.display(ipd.Audio(addr, autoplay=True))
-    time.sleep(3)
-    ipd.clear_output()
-
-
-# *submission example*
-# 
-# - fname,label
-# - clip_000044442.wav,silence
-# - clip_0000adecb.wav,silence
-# - clip_0000d4322.wav,silence
-
-# In[ ]:
-
-
-#save results
-suffix = datetime.datetime.today().isoformat().split(':')[0]
-with open('prediction_{}.txt'.format(suffix), 'w') as f:
-    f.write("fname,label\n")  #header
-    to_save = ("{},{}\n".format(a,b) for a,b in zip(user_names, predictions_filtered))
-    f.writelines(to_save)
-
-
-# ###### convert to .py script
-
-# In[15]:
-
-
-get_ipython().system('jupyter nbconvert --to script CNN.ipynb --output CNN_for_GPU_2')
 
 
