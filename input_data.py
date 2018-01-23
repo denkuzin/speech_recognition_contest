@@ -69,17 +69,7 @@ def which_set(filename, validation_percentage, testing_percentage):
     String, one of 'training', 'validation', or 'testing'.
   """
   base_name = os.path.basename(filename)
-  # We want to ignore anything after '_nohash_' in the file name when
-  # deciding which set to put a wav in, so the data set creator has a way of
-  # grouping wavs that are close variations of each other.
   hash_name = re.sub(r'_nohash_.*$', '', base_name)
-  # This looks a bit magical, but we need to decide whether this file should
-  # go into the training, testing, or validation sets, and we want to keep
-  # existing files in the same set even if more files are subsequently
-  # added.
-  # To do that, we need a stable way of deciding based on just the file name
-  # itself, so we do a hash of that and then use that to generate a
-  # probability value that we use to assign it.
   hash_name_hashed = hashlib.sha1(compat.as_bytes(hash_name)).hexdigest()
   percentage_hash = ((int(hash_name_hashed, 16) %
                       (MAX_NUM_WAVS_PER_CLASS + 1)) *
